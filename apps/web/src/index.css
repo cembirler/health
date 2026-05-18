@@ -1,0 +1,209 @@
+@import "tailwindcss";
+
+/* Unify the font family across the whole app. One sans stack used by:
+ *   - HTML <body> (via :root font: below)
+ *   - Tailwind's `font-sans` utility (via the @theme override)
+ * One mono stack used by `font-mono`. */
+@theme {
+  --font-sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI",
+    Roboto, sans-serif;
+  --font-mono:
+    ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* Brand navy — trust anchor. Overrides Tailwind's default blue tokens
+     used for chrome (navbar, brand mark, primary buttons, links,
+     translucent active-tab pill). The full ramp is overridden because
+     buttons/links pull blue-600/700/800 and timeline dots pull
+     blue-300/400, so leaving Tailwind defaults in place would mix true
+     blue back in. blue-900 (#1B3D6E) is the primary chrome shade;
+     blue-950 (#0B2545) is the darker hover variant. */
+  --color-blue-50:  #eef2f8;
+  --color-blue-100: #d8e3f0;
+  --color-blue-300: #82a0c8;
+  --color-blue-400: #547fae;
+  --color-blue-500: #355f92;
+  --color-blue-600: #2a4e7c;
+  --color-blue-700: #234269;
+  --color-blue-800: #1f3d63;
+  --color-blue-900: #1B3D6E;
+  --color-blue-950: #0B2545;
+
+  /* Warm brand accent — user-specified #FBCC23 (bright yellow/gold the
+     user refers to as "orange"). Overrides Tailwind's orange tokens used
+     by the user-side accents (suggestion chips, user message bubble) and
+     the "Other" insurance card. */
+  --color-orange-50:  #fffbeb;
+  --color-orange-100: #fff5cc;
+  --color-orange-200: #ffe87d;
+  --color-orange-300: #fbd95c;
+  --color-orange-400: #fbcc23; /* user's exact #FBCC23 — composer focus + send btn */
+  --color-orange-500: #d4af1a; /* darker version for send-btn hover */
+
+  /* Warning — distinct from the brand gold above; used for soft-warning
+     glyphs and text (auto-download caveat, "you interrupted" bubble, etc).
+     `text-warning` for foreground, `bg-warning-50` for the soft surface,
+     `border-warning-200` for the matching outline. Always reach for
+     <WarningNote> / WarningBubble instead of using these directly. */
+  --color-warning-50: #fff7ed;
+  --color-warning-200: #fed7aa;
+  --color-warning: #c2410c;
+
+  /* Payer / insurance — turquoise accent ONLY for the payer-rate pill
+     surface (background + border). Payer-related text reads as ordinary
+     body content (gray-600 / gray-800), so it doesn't compete with the
+     brand blue or warning orange — only the chip itself signals "this is
+     an insurer-negotiated rate". Used in StructuredCards' expanded payer
+     chips. Kept light and turquoise (not deep teal) so it sits quietly
+     beside the other rows. */
+  --color-payer-50: #ecfeff;
+  --color-payer-100: #a5f3fc;
+}
+
+/* =============================================================================
+ * DESIGN TOKENS — verify consistency here.
+ *
+ *  Type scale (mostly 4-px grid; one explicit exception at 14 px):
+ *    text-xs    →  12 px   small labels, table cells, JSON tokens, "Try one
+ *                          of these" caption
+ *    text-sm    →  14 px   *chat content* — message bubbles, composer text,
+ *                          example chips. EXCEPTION to the 4-px rule.
+ *    text-base  →  16 px   navbar items + "Health Price Transparency"
+ *                          brand text (same weight + color as nav items) +
+ *                          HeartPulse brand icon + connect-card body / buttons
+ *    text-2xl   →  24 px   page <h2>
+ *
+ *  Colors — two roles:
+ *    Orange = "user side" (anything the human types or picks):
+ *      orange-50   user message bg, composer bg, prompt-chip bg
+ *      orange-100  user message border
+ *      orange-200  prompt-chip border, composer focus ring
+ *      orange-300  composer focus border, prompt-chip hover border
+ *      orange-400  composer placeholder
+ *      orange-700  prompt-chip text
+ *    Blue = "agent side" + chrome + buttons (single primary shade = blue-700):
+ *      blue-50    nav active/hover pill, agent reply bubble bg, info accents
+ *      blue-100   agent reply bubble border
+ *      blue-300   agent timeline dot
+ *      blue-700   nav text, brand text + brand mark bg, all primary filled
+ *                 buttons (send, "Start your own chat", new-chat sidebar btn),
+ *                 selected insurance-card border, JSON keys
+ *      blue-800   button hover
+ *    Neutral (text + chrome):
+ *      gray-50  #f9fafb   tool-call bg
+ *      gray-100 #f3f4f6   tool-call hover
+ *      gray-200 #e5e7eb   borders
+ *      gray-400 #9ca3af   muted icon, "in"/"out" labels
+ *      gray-500 #6b7280   nav inactive text
+ *      gray-700 #374151   brand text
+ *      gray-800 #1f2937   message body text
+ *    Status:
+ *      green-400 #4ade80  tool-call success dot
+ *      green-600 #16a34a  in JsonRenderer numbers (token color)
+ *      red-200 / 50 / 400 / 500 / 700  error states (border / bg / dot / text)
+ *      warning  #c2410c     warning text + warning glyph (see WarningNote.tsx).
+ *                           Used by the SourceChip auto-download caveat and
+ *                           the "you interrupted the agent" bubble. Always
+ *                           reach for `<WarningNote>` instead of hand-rolling
+ *                           an icon + utility-class pair. Note: deliberately
+ *                           more red-orange than the brand `orange-700` gold
+ *                           so warnings don't read as user-side accents.
+ *    Payer (turquoise — accent on the pill surface only):
+ *      payer-50   #ecfeff   pill bg behind a payer-rate chip
+ *      payer-100  #a5f3fc   pill border
+ *                           Payer-related text reuses ordinary body grays
+ *                           (gray-400/500/600/800) so payers don't read as
+ *                           a "side" alongside user-orange / agent-blue —
+ *                           only the chip surface itself flags "insurer
+ *                           negotiated rate".
+ *
+ * Update this block any time a new color or off-scale font shows up.
+ * ============================================================================= */
+
+:root {
+  --text: #6b6375;
+  --text-h: #08060d;
+  --bg: #fff;
+  --code-bg: #f4f3ec;
+
+  /* Mirror @theme above — keeping these tokens for any rule that already
+   * references var(--sans) / var(--mono). */
+  --sans:
+    -apple-system, BlinkMacSystemFont, "SF Pro Text", "Inter", "Segoe UI",
+    Roboto, sans-serif;
+  --heading: var(--sans);
+  --mono: ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+
+  /* 16 px / 150% — keeps Tailwind's rem-based scale honest:
+   *   text-xs   → 0.75rem  → 12 px
+   *   text-base → 1rem     → 16 px
+   *   text-2xl  → 1.5rem   → 24 px
+   * (was 18 px from the Vite template, which inflated every utility by 12.5%) */
+  font: 16px/150% var(--sans);
+  letter-spacing: 0.18px;
+  /* Lock to light — the rest of the design uses hardcoded light colors
+     (white surfaces, gray-200 borders, etc.), so honoring the OS dark
+     pref leaves CSS-var-driven elements (code/tool-name backgrounds)
+     dark while everything else stays light. */
+  color-scheme: light;
+  color: var(--text);
+  background: var(--bg);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#root {
+  min-height: 100svh;
+  display: flex;
+  flex-direction: column;
+}
+
+body {
+  margin: 0;
+}
+
+h1,
+h2 {
+  font-family: var(--heading);
+  font-weight: 500;
+  color: var(--text-h);
+}
+
+h1 {
+  font-size: 56px;
+  letter-spacing: -1.68px;
+  margin: 32px 0;
+  @media (max-width: 1024px) {
+    font-size: 36px;
+    margin: 20px 0;
+  }
+}
+h2 {
+  font-size: 24px;
+  line-height: 118%;
+  letter-spacing: -0.24px;
+  margin: 0 0 8px;
+  @media (max-width: 1024px) {
+    font-size: 20px;
+  }
+}
+p {
+  margin: 0;
+}
+
+code,
+.counter {
+  font-family: var(--mono);
+  display: inline-flex;
+  border-radius: 4px;
+  color: var(--text-h);
+}
+
+code {
+  font-size: 15px;
+  line-height: 135%;
+  padding: 4px 8px;
+  background: var(--code-bg);
+}

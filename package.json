@@ -1,0 +1,11 @@
+{
+  "name": "health",
+  "private": true,
+  "workspaces": [
+    "apps/web"
+  ],
+  "scripts": {
+    "web": "npm run dev --workspace=@health/web",
+    "build:web": "npm run build --workspace=@health/web"
+  }
+}

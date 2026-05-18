@@ -1,0 +1,16 @@
+# Only the web app and root manifests need to ship to Vercel.
+# Everything else (46G of MRF CSVs, the Python API, archived data,
+# scripts, docs) is dead weight at build time.
+
+apps/api/
+packages/
+data/
+_archive/
+docs/
+.claude/
+.venv/
+**/__pycache__/
+*.py
+*.pyc
+Dockerfile
+cloudbuild.yaml

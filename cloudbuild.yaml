@@ -1,0 +1,56 @@
+# Cloud Build pipeline: build the FastAPI image and deploy it to Cloud Run.
+# Triggered on push to main (configured via `gcloud builds triggers create github`).
+# Manual run: `gcloud builds submit --config cloudbuild.yaml`.
+
+substitutions:
+  _REGION: us-west1
+  _REPO: health
+  _SERVICE: health-api
+  _SQL_INSTANCE: health-496300:us-west1:health-prod
+
+steps:
+  - id: build
+    name: gcr.io/cloud-builders/docker
+    args:
+      - build
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
+      - -t
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest
+      - .
+
+  - id: push
+    name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}
+
+  - id: deploy
+    name: gcr.io/cloud-builders/gcloud
+    entrypoint: gcloud
+    args:
+      - run
+      - deploy
+      - ${_SERVICE}
+      - --image=${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
+      - --region=${_REGION}
+      - --platform=managed
+      - --allow-unauthenticated
+      - --add-cloudsql-instances=${_SQL_INSTANCE}
+      - --update-secrets=DATABASE_URL=health-database-url:latest,GOOGLE_API_KEY=health-google-api-key:latest
+      - --update-env-vars=HEALTH_API_URL=http://127.0.0.1:8080,MODEL=gemma-4-26b-a4b-it
+      - --memory=1Gi
+      - --cpu=1
+      - --concurrency=80
+      - --timeout=300
+      - --min-instances=0
+      - --max-instances=5
+
+images:
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:$SHORT_SHA
+  - ${_REGION}-docker.pkg.dev/$PROJECT_ID/${_REPO}/${_SERVICE}:latest
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  machineType: E2_HIGHCPU_8

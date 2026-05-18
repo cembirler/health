@@ -1,0 +1,23 @@
+# Keep the build context lean — most of the repo is data, not code.
+data/
+**/__pycache__/
+**/*.pyc
+**/.venv/
+**/node_modules/
+apps/web/dist/
+apps/web/build/
+.git/
+.github/
+.claude/
+.idea/
+.vscode/
+*.log
+*.sql
+*.sql.gz
+.env
+.env.*
+!.env.example
+docs/
+scripts/
+design.md
+README.md
